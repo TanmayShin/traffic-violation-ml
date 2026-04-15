@@ -1,0 +1,19 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+ml_env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local/unrelated workspace files
+ML DATASETS/
+ML LABS/
+PR1.py
+spam.csv
