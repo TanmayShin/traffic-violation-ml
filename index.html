@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrafficGuard - ML Traffic Violation Prediction Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="32" height="32" rx="2" fill="#EF4444" opacity="0.1" stroke="#EF4444" stroke-width="2"/>
+            <path d="M20 10L25 15H15L20 10Z" fill="#EF4444"/>
+            <circle cx="12" cy="25" r="2" fill="#FBBF24"/>
+            <circle cx="20" cy="28" r="2" fill="#FBBF24"/>
+            <circle cx="28" cy="25" r="2" fill="#FBBF24"/>
+          </svg>
+          <h1>TrafficGuard</h1>
+          <span class="subtitle">ML-Powered Violation Prediction</span>
+        </div>
+      </div>
+      <div class="header-center">
+        <div class="location-info">
+          <span class="location-icon">📍</span>
+          <span>Aurangabad District, Maharashtra</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="live-indicator">
+          <!-- <span class="live-dot"></span> -->
+          <!-- <span>LIVE - Last Update: <span id="lastUpdate">--:--:--</span></span> -->
+        </div>
+      </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="overview">📊 Overview</button>
+      <button class="nav-tab" data-tab="models">🤖 ML Models</button>
+      <button class="nav-tab" data-tab="zones">🗺️ Risk Zones</button>
+      <button class="nav-tab" data-tab="predictions">🔮 Predictions</button>
+      <button class="nav-tab" data-tab="features">⭐ Feature Analysis</button>
+      <button class="nav-tab" data-tab="diagnostics">🔬 Model Diagnostics</button>
+      <button class="nav-tab" data-tab="anomaly">⚡ Anomalies</button>
+      <button class="nav-tab" data-tab="alerts">🔔 Alerts</button>
+      <button class="nav-tab" data-tab="cameras">📷 Cameras</button>
+      <button class="nav-tab" data-tab="reports">📈 Reports</button>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- TAB: OVERVIEW -->
+      <div class="tab-content active" id="overview">
+        <div class="metrics-row">
+          <div class="metric-card metric-red">
+            <div class="metric-header">
+              <span class="metric-title">Violations Detected</span>
+              <span class="metric-icon">🚨</span>
+            </div>
+            <div class="metric-value" id="violationCount">1,284</div>
+            <div class="metric-trend">
+              <span class="trend-up">↑ 12% vs Yesterday</span>
+            </div>
+          </div>
+
+          <div class="metric-card metric-amber">
+            <div class="metric-header">
+              <span class="metric-title">High-Risk Zones</span>
+              <span class="metric-icon">⚠️</span>
+            </div>
+            <div class="metric-value" id="riskZoneCount">7</div>
+            <div class="metric-trend">
+              <span class="trend-up">↑ 2 New Zones</span>
+            </div>
+          </div>
+
+          <div class="metric-card metric-blue">
+            <div class="metric-header">
+              <span class="metric-title">Model Accuracy</span>
+              <span class="metric-icon">✅</span>
+            </div>
+            <div class="metric-value">91.4%</div>
+            <div class="metric-trend">
+              <span>Random Forest (Best)</span>
+            </div>
+          </div>
+
+          <div class="metric-card metric-green">
+            <div class="metric-header">
+              <span class="metric-title">Cameras Active</span>
+              <span class="metric-icon">📹</span>
+            </div>
+            <div class="metric-value">21/24</div>
+            <div class="metric-trend">
+              <span>87.5% Uptime</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3 class="chart-title">📈 Violations Trend (7 Days)</h3>
+            <canvas id="trendChart"></canvas>
+          </div>
+
+          <div class="chart-container">
+            <h3 class="chart-title">🕐 Peak Hours Analysis</h3>
+            <canvas id="peakHoursChart"></canvas>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3 class="chart-title">🚗 Violation Types Distribution</h3>
+            <canvas id="violationTypesChart"></canvas>
+          </div>
+
+          <div class="chart-container">
+            <h3 class="chart-title">📊 Model Performance Comparison</h3>
+            <canvas id="modelComparisonChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-container full-width">
+          <h3 class="chart-title">🎯 Top 10 High-Risk Zones (30 Days)</h3>
+          <div id="topZonesContainer" class="zones-list-container"></div>
+        </div>
+      </div>
+
+      <!-- TAB: ML MODELS -->
+      <div class="tab-content" id="models">
+        <div class="models-section">
+          <h2 class="section-title">Machine Learning Models Comparison</h2>
+          
+          <div class="models-grid">
+            <div class="model-card model-card-primary">
+              <div class="model-header">
+                <h3>Random Forest</h3>
+                <span class="model-badge badge-best">BEST</span>
+              </div>
+              <div class="model-stats">
+                <div class="stat-row">
+                  <span class="stat-label">Accuracy:</span>
+                  <span class="stat-value">91.4%</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">F1-Score:</span>
+                  <span class="stat-value">0.914</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Status:</span>
+                  <span class="stat-value status-active">Active</span>
+                </div>
+              </div>
+              <div class="model-progress">
+                <div class="progress-bar" style="width: 91.4%"></div>
+              </div>
+            </div>
+
+            <div class="model-card">
+              <div class="model-header">
+                <h3>XGBoost</h3>
+                <span class="model-badge badge-good">GOOD</span>
+              </div>
+              <div class="model-stats">
+                <div class="stat-row">
+                  <span class="stat-label">Accuracy:</span>
+                  <span class="stat-value">89.2%</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">F1-Score:</span>
+                  <span class="stat-label">0.892</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Status:</span>
+                  <span class="stat-value status-standby">Standby</span>
+                </div>
+              </div>
+              <div class="model-progress">
+                <div class="progress-bar" style="width: 89.2%; background: #3B82F6;"></div>
+              </div>
+            </div>
+
+            <div class="model-card">
+              <div class="model-header">
+                <h3>Decision Tree</h3>
+              </div>
+              <div class="model-stats">
+                <div class="stat-row">
+                  <span class="stat-label">Accuracy:</span>
+                  <span class="stat-value">87.5%</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">F1-Score:</span>
+                  <span class="stat-value">0.875</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Status:</span>
+                  <span class="stat-value status-standby">Standby</span>
+                </div>
+              </div>
+              <div class="model-progress">
+                <div class="progress-bar" style="width: 87.5%; background: #8B5CF6;"></div>
+              </div>
+            </div>
+
+            <div class="model-card">
+              <div class="model-header">
+                <h3>Logistic Regression</h3>
+              </div>
+              <div class="model-stats">
+                <div class="stat-row">
+                  <span class="stat-label">Accuracy:</span>
+                  <span class="stat-value">82.1%</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">F1-Score:</span>
+                  <span class="stat-value">0.821</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Status:</span>
+                  <span class="stat-value status-inactive">Inactive</span>
+                </div>
+              </div>
+              <div class="model-progress">
+                <div class="progress-bar" style="width: 82.1%; background: #10B981;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-container">
+              <h3 class="chart-title">Model Accuracy Comparison</h3>
+              <canvas id="modelAccuracyChart"></canvas>
+            </div>
+            <div class="chart-container">
+              <h3 class="chart-title">Model Performance (F1-Score)</h3>
+              <canvas id="modelF1Chart"></canvas>
+            </div>
+          </div>
+
+          <div class="model-info-section">
+            <h3>Model Details</h3>
+            <table class="model-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Type</th>
+                  <th>Accuracy</th>
+                  <th>Precision</th>
+                  <th>Recall</th>
+                  <th>F1-Score</th>
+                  <th>Last Training</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="active-row">
+                  <td><strong>Random Forest</strong></td>
+                  <td>Ensemble</td>
+                  <td>91.4%</td>
+                  <td>0.912</td>
+                  <td>0.916</td>
+                  <td>0.914</td>
+                  <td>2 days ago</td>
+                </tr>
+                <tr>
+                  <td>XGBoost</td>
+                  <td>Ensemble</td>
+                  <td>89.2%</td>
+                  <td>0.890</td>
+                  <td>0.894</td>
+                  <td>0.892</td>
+                  <td>3 days ago</td>
+                </tr>
+                <tr>
+                  <td>Decision Tree</td>
+                  <td>Tree</td>
+                  <td>87.5%</td>
+                  <td>0.873</td>
+                  <td>0.877</td>
+                  <td>0.875</td>
+                  <td>5 days ago</td>
+                </tr>
+                <tr>
+                  <td>Logistic Regression</td>
+                  <td>Linear</td>
+                  <td>82.1%</td>
+                  <td>0.819</td>
+                  <td>0.823</td>
+                  <td>0.821</td>
+                  <td>1 week ago</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: RISK ZONES -->
+      <div class="tab-content" id="zones">
+        <h2 class="section-title">Risk Zone Analysis & Heatmap</h2>
+        
+        <div class="zones-heatmap-container">
+          <div class="heatmap-wrapper">
+            <div class="heatmap" id="zoneHeatmap">
+              <!-- Zone bubbles will be inserted here -->
+            </div>
+          </div>
+        </div>
+
+        <div class="zones-section">
+          <h3 class="subsection-title">Top 10 High-Risk Zones</h3>
+          <div id="zonesList" class="zones-list"></div>
+        </div>
+
+        <div class="chart-container full-width">
+          <h3 class="chart-title">Risk Zone Distribution by Type</h3>
+          <canvas id="riskDistributionChart"></canvas>
+        </div>
+      </div>
+
+      <!-- TAB: PREDICTIONS -->
+      <div class="tab-content" id="predictions">
+        <h2 class="section-title">Real-Time Violation Predictions</h2>
+        
+        <div class="prediction-controls">
+          <div class="control-group">
+            <label>Select Zone:</label>
+            <select id="zoneSelect" class="form-select">
+              <option value="">-- All Zones --</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Time Range:</label>
+            <select id="timeSelect" class="form-select">
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="refreshPredictions()">🔄 Refresh</button>
+        </div>
+
+        <div class="predictions-table-container">
+          <table class="predictions-table">
+            <thead>
+              <tr>
+                <th>Zone</th>
+                <th>Violation Type</th>
+                <th>Confidence</th>
+                <th>Prediction</th>
+                <th>Risk Level</th>
+                <th>Peak Window</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="predictionsBody">
+              <!-- Populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: FEATURE ANALYSIS -->
+      <div class="tab-content" id="features">
+        <h2 class="section-title">ML Feature Importance Analysis</h2>
+        
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3 class="chart-title">Feature Importance (Top 10)</h3>
+            <canvas id="featureImportanceChart"></canvas>
+          </div>
+
+          <div class="features-list-container">
+            <h3>Feature Details</h3>
+            <div id="featuresList" class="features-list"></div>
+          </div>
+        </div>
+
+        <div class="chart-container full-width">
+          <h3 class="chart-title">Feature Correlation Matrix</h3>
+          <div id="correlationMatrix" class="correlation-matrix"></div>
+        </div>
+      </div>
+
+      <!-- TAB: MODEL DIAGNOSTICS -->
+      <div class="tab-content" id="diagnostics">
+        <h2 class="section-title">Model Diagnostics & Performance Analysis</h2>
+        
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3 class="chart-title">Confusion Matrix - Best Model</h3>
+            <canvas id="confusionMatrixChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3 class="chart-title">ROC Curve Analysis</h3>
+            <canvas id="rocCurveChart"></canvas>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3 class="chart-title">Precision-Recall Curve</h3>
+            <canvas id="precisionRecallChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3 class="chart-title">Cross-Validation Stability</h3>
+            <canvas id="cvStabilityChart"></canvas>
+          </div>
+        </div>
+
+        <div class="diagnostic-metrics">
+          <h3>Detailed Model Metrics</h3>
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Accuracy</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1-Score</th>
+                <th>AUC-ROC</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="metricsTableBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: ANOMALIES -->
+      <div class="tab-content" id="anomaly">
+        <h2 class="section-title">Anomaly Detection & Outliers</h2>
+        
+        <div class="anomaly-controls">
+          <div class="control-group">
+            <label>Sensitivity Level:</label>
+            <select id="sensitivitySelect" class="form-select">
+              <option value="low">Low (High precision)</option>
+              <option value="medium" selected>Medium (Balanced)</option>
+              <option value="high">High (More detections)</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="detectAnomalies()">🔍 Scan for Anomalies</button>
+        </div>
+
+        <div id="anomaliesContainer" class="anomalies-grid">
+          <!-- Anomalies will be displayed here -->
+        </div>
+
+        <div class="chart-container full-width">
+          <h3 class="chart-title">Anomaly Distribution Timeline</h3>
+          <canvas id="anomalyTimelineChart"></canvas>
+        </div>
+      </div>
+
+      <!-- TAB: ALERTS -->
+      <div class="tab-content" id="alerts">
+        <h2 class="section-title">Real-Time Alerts & Notifications</h2>
+        
+        <div class="alerts-grid" id="alertsContainer">
+          <!-- Alerts will be populated here -->
+        </div>
+
+        <div class="chart-container full-width">
+          <h3 class="chart-title">Alert Timeline (Last 7 Days)</h3>
+          <canvas id="alertTimelineChart"></canvas>
+        </div>
+
+        <div class="alert-stats">
+          <div class="alert-stat">
+            <span class="alert-level critical">🔴 Critical</span>
+            <span class="alert-count" id="criticalCount">0</span>
+          </div>
+          <div class="alert-stat">
+            <span class="alert-level warning">🟠 Warning</span>
+            <span class="alert-count" id="warningCount">0</span>
+          </div>
+          <div class="alert-stat">
+            <span class="alert-level info">🔵 Info</span>
+            <span class="alert-count" id="infoCount">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: CAMERAS -->
+      <div class="tab-content" id="cameras">
+        <h2 class="section-title">Camera Network Status</h2>
+        
+        <div class="cameras-stats">
+          <div class="camera-stat">
+            <span class="stat-title">Total Cameras</span>
+            <span class="stat-number">24</span>
+          </div>
+          <div class="camera-stat">
+            <span class="stat-title">Online</span>
+            <span class="stat-number" style="color: #10B981;">21</span>
+          </div>
+          <div class="camera-stat">
+            <span class="stat-title">Offline</span>
+            <span class="stat-number" style="color: #EF4444;">3</span>
+          </div>
+          <div class="camera-stat">
+            <span class="stat-title">Uptime</span>
+            <span class="stat-number" style="color: #3B82F6;">87.5%</span>
+          </div>
+        </div>
+
+        <div id="camerasList" class="cameras-grid">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- TAB: REPORTS -->
+      <div class="tab-content" id="reports">
+        <h2 class="section-title">Reports & Export</h2>
+        
+        <div class="reports-section">
+          <div class="report-card">
+            <h3>📊 Daily Report</h3>
+            <p>Summary of violations, high-risk zones, and model performance for today.</p>
+            <button class="btn-secondary" onclick="generateReport('daily')">Generate Report</button>
+          </div>
+
+          <div class="report-card">
+            <h3>📈 Weekly Summary</h3>
+            <p>Comprehensive weekly analysis with trends and insights.</p>
+            <button class="btn-secondary" onclick="generateReport('weekly')">Generate Report</button>
+          </div>
+
+          <div class="report-card">
+            <h3>📋 Zone Analysis</h3>
+            <p>Detailed breakdown of violations by zone with heatmap data.</p>
+            <button class="btn-secondary" onclick="generateReport('zones')">Generate Report</button>
+          </div>
+
+          <div class="report-card">
+            <h3>🤖 Model Performance</h3>
+            <p>ML model accuracy, F1-scores, and comparative metrics.</p>
+            <button class="btn-secondary" onclick="generateReport('model')">Generate Report</button>
+          </div>
+
+          <div class="report-card">
+            <h3>📸 Camera Status</h3>
+            <p>Camera uptime, offline instances, and maintenance schedule.</p>
+            <button class="btn-secondary" onclick="generateReport('cameras')">Generate Report</button>
+          </div>
+
+          <div class="report-card">
+            <h3>📥 Export Data</h3>
+            <p>Export all data in CSV, JSON, or PDF format.</p>
+            <button class="btn-secondary" onclick="exportData('csv')">Export CSV</button>
+          </div>
+        </div>
+
+        <div class="chart-container full-width">
+          <h3 class="chart-title">Historical Data (30 Days)</h3>
+          <canvas id="historicalChart"></canvas>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
